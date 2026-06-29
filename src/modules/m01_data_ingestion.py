@@ -1,95 +1,152 @@
+"""
+==========================================================
+MODULE 01
+Scientific Data Ingestion Engine
+==========================================================
+
+Reads:
+
+• DFSAR XML Metadata
+• DFSAR Binary Radar File
+
+Outputs:
+
+DFSARDataset object
+
+==========================================================
+"""
+
 from pathlib import Path
 
 from src.core.base_module import BaseModule
-
 from src.models.dataset import DFSARDataset
-
 from src.utils.logger import logger
-
 from src.utils.pds_parser import PDSParser
 
 
 class DataIngestion(BaseModule):
 
     def __init__(self):
-
         super().__init__("Module 01 : Data Ingestion")
 
+    # =====================================================
+    # Check whether required files exist
+    # =====================================================
 
-    def validate_files(self, xml_file, data_file):
+    def validate_files(self, xml_file: str, data_file: str):
 
         logger.info("Checking input files...")
 
-        if not Path(xml_file).exists():
+        xml_path = Path(xml_file)
+        data_path = Path(data_file)
 
-            raise FileNotFoundError(xml_file)
+        if not xml_path.exists():
+            raise FileNotFoundError(f"XML file not found: {xml_file}")
 
-        if not Path(data_file).exists():
+        if not data_path.exists():
+            raise FileNotFoundError(f"Radar file not found: {data_file}")
 
-            raise FileNotFoundError(data_file)
+        logger.info("Input files verified successfully.")
 
-        logger.info("Input files verified.")
+    # =====================================================
+    # Read XML and create dataset
+    # =====================================================
 
+    def load_dataset(self, xml_file: str, data_file: str):
 
-    def load_dataset(self, xml_file, data_file):
+        logger.info("Reading PDS4 XML...")
 
         parser = PDSParser(xml_file)
 
         metadata = parser.extract_metadata()
 
-        dataset = DFSARDataset(
+        logger.info("Metadata extracted successfully.")
 
-            mission="Chandrayaan-2",
+        dataset = DFSARDataset()
 
-            instrument="DFSAR",
+        dataset.mission = "Chandrayaan-2"
 
-            frequency_band=metadata["frequency_band"],
+        dataset.instrument = "DFSAR"
 
-            polarization="Unknown",
+        dataset.product_type = metadata.get("product_type", "")
 
-            orbit_number=int(metadata["orbit_number"]),
+        dataset.frequency_band = metadata.get("frequency_band", "")
 
-            acquisition_time="",
+        dataset.polarization = metadata.get("polarization", "Unknown")
 
-            incidence_angle=float(metadata["incidence_angle"]),
+        dataset.orbit_number = int(metadata.get("orbit_number", 0))
 
-            look_direction=metadata["look_direction"],
+        dataset.acquisition_time = metadata.get("scene_start_time", "")
 
-            product_type=metadata["product_type"],
+        dataset.incidence_angle = float(metadata.get("incidence_angle", 0))
 
-            data_path=Path(data_file),
+        dataset.look_direction = metadata.get("look_direction", "")
 
-            xml_path=Path(xml_file),
-
-            metadata=metadata
-
+        dataset.spacecraft_altitude = float(
+            metadata.get("spacecraft_altitude", 0)
         )
+
+        dataset.center_latitude = float(
+            metadata.get("centre_latitude", 0)
+        )
+
+        dataset.center_longitude = float(
+            metadata.get("centre_longitude", 0)
+        )
+
+        dataset.xml_path = Path(xml_file)
+
+        dataset.data_path = Path(data_file)
+
+        dataset.metadata = metadata
+
+        dataset.mark_loaded()
+
+        logger.info("Dataset object created successfully.")
 
         return dataset
 
+    # =====================================================
+    # Print Summary
+    # =====================================================
 
-    def run(self):
-
-        logger.info("Waiting for DFSAR dataset...")
-
-        logger.info("Module ready.")
-    
     def print_dataset_summary(self, dataset):
 
-    logger.info("------------- DFSAR SUMMARY -------------")
+        dataset.summary()
 
-    logger.info(f"Mission : {dataset.mission}")
+    # =====================================================
+    # Main Module Execution
+    # =====================================================
 
-    logger.info(f"Instrument : {dataset.instrument}")
+    def run(self, xml_file=None, data_file=None):
 
-    logger.info(f"Band : {dataset.frequency_band}")
+        logger.info("===================================")
+        logger.info("MODULE 01 : DATA INGESTION STARTED")
+        logger.info("===================================")
 
-    logger.info(f"Orbit : {dataset.orbit_number}")
+        if xml_file is None or data_file is None:
 
-    logger.info(f"Incidence : {dataset.incidence_angle}")
+            logger.warning(
+                "No dataset supplied."
+            )
 
-    logger.info(f"Latitude : {dataset.center_latitude}")
+            logger.info(
+                "Module initialized successfully."
+            )
 
-    logger.info(f"Longitude : {dataset.center_longitude}")
+            return None
 
-    logger.info("-----------------------------------------")
+        self.validate_files(xml_file, data_file)
+
+        dataset = self.load_dataset(
+            xml_file,
+            data_file
+        )
+
+        dataset.validate()
+
+        self.print_dataset_summary(dataset)
+
+        logger.info("Module 01 completed successfully.")
+
+        return dataset

@@ -1,0 +1,60 @@
+# -----------------------------
+# Python
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# Data
+data/raw/
+data/external/
+
+# Generated outputs
+outputs/
+figures/generated/
+
+# Large archives
+*.zip
+*.tar
+*.gz
+*.7z
+
+# Raster outputs
+*.tif
+*.img
+
+# Model outputs
+*.npy
+*.npz
+
+# Monte Carlo results
+*.json
+
+# Streamlit cache
+.streamlit/
+
+# Build folders
+dist/
+build/

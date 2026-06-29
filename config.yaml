@@ -1,0 +1,45 @@
+project:
+
+  name: Lunar Ice Detection Framework
+
+  version: 1.0
+
+
+
+paths:
+
+  dfsar_xml: Data/raw/sample.xml
+
+  dfsar_data: Data/raw/sample.dat
+
+  output: results/
+
+  figures: figures/
+
+
+
+processing:
+
+  band: L
+
+  calibration: true
+
+  speckle_filter: refined_lee
+
+  decomposition: all
+
+
+
+thresholds:
+
+  cpr: 1.0
+
+  dop: 0.13
+
+  probability: 0.50
+
+
+
+monte_carlo:
+
+  simulations: 10000

@@ -47,6 +47,10 @@ Cost =
 0.20D +
 0.10R
 """)
+st.markdown("""
+The numbers are assigned as an initial decision model to make the ranking explainable.
+They are not derived from training data because the official hackathon dataset has not yet been released.
+""")
 
 st.markdown("### Variable Meaning")
 
@@ -419,3 +423,15 @@ not only where ice may exist, but how a rover can safely reach it.
 
 st.markdown("---")
 st.caption("LunarIce-DFSAR | Rover traverse planning and mobility-cost framework")
+st.warning("""
+Important note on weights:
+
+The current weights are not claimed to be final mission-certified values.
+They are initial, knowledge-driven weights chosen for ideation-stage scoring.
+
+They are based on relative mission priority:
+scientific value, safety, operational feasibility and mobility risk.
+
+In the next implementation stage, these weights can be refined using:
+AHP, MCDA, expert review, sensitivity analysis, or mission-specific constraints.
+""")

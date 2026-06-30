@@ -48,8 +48,8 @@ Cost =
 0.10R
 """)
 st.markdown("""
-The numbers are assigned as an initial decision model to make the ranking explainable.
-They are not derived from training data because the official hackathon dataset has not yet been released.
+I have assigned the values as an initial decision model to make the ranking explainable.
+They are not derived from training data because the official hackathon dataset is not yet provided.
 """)
 
 st.markdown("### Variable Meaning")

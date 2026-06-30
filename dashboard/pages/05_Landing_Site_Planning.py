@@ -12,8 +12,7 @@ st.markdown("""
 The landing site should be close to scientifically valuable ice-bearing regions while also
 remaining safe, illuminated, accessible and operationally feasible.
 
-This page explains how the framework converts ice detection results into a ranked list of
-candidate landing zones.
+This module converts ice detection results into a ranked list of candidate landing zones.
 """)
 
 st.markdown("---")
@@ -21,17 +20,8 @@ st.markdown("---")
 st.markdown("## Landing Site Scoring Model")
 
 st.markdown("""
-Selecting a landing site near the lunar south pole is a multi-objective decision problem.
-
-A good landing site must satisfy both **scientific** and **engineering** requirements:
-
-- It should be close to high-probability ice deposits.
-- It should have low slope for safe descent and touchdown.
-- It should have sufficient illumination for power and thermal control.
-- It should avoid boulder-rich hazardous terrain.
-- It should maintain acceptable communication visibility.
-
-To balance these competing requirements, a weighted suitability score is computed.
+Landing site selection near the lunar south pole is a multi-criteria decision problem.
+A good site must balance scientific value with engineering safety.
 """)
 
 st.latex(r"""
@@ -51,31 +41,21 @@ st.table({
         "Ice probability or proximity to high-confidence ice target",
         "Slope safety score",
         "Solar illumination availability",
-        "Boulder hazard score",
+        "Boulder hazard safety score",
         "Communication visibility"
     ],
     "Weight": ["0.30", "0.25", "0.20", "0.15", "0.10"]
 })
-st.markdown("## How the Score Is Computed")
+
+st.markdown("## How Each Score Is Computed")
 
 st.markdown("""
-Each factor is first converted into a normalized score between **0 and 1**.
-
-A value of:
+Each factor is normalized between **0 and 1**.
 
 - **1** means highly suitable
 - **0** means unsuitable
 
-The final landing score is then calculated as a weighted sum.
-""")
-
-st.latex(r"""
-Score =
-0.30I +
-0.25S +
-0.20L +
-0.15B +
-0.10C
+The final score is a weighted sum of the normalized values.
 """)
 
 st.markdown("### 1. Ice Proximity Score")
@@ -83,7 +63,6 @@ st.markdown("### 1. Ice Proximity Score")
 st.latex(r"""
 I =
 P_{ice}
-\times
 \left(
 1 -
 \frac{d_{ice}}{d_{max}}
@@ -94,10 +73,10 @@ st.markdown("""
 Where:
 
 - \(P_{ice}\) = ice probability from Bayesian fusion
-- \(d_{ice}\) = distance from landing site to nearest high-probability ice region
+- \(d_{ice}\) = distance to nearest high-probability ice region
 - \(d_{max}\) = maximum acceptable rover distance
 
-A site closer to high-probability ice receives a higher score.
+A site closer to high-confidence ice receives a higher score.
 """)
 
 st.markdown("### 2. Slope Safety Score")
@@ -114,7 +93,7 @@ Where:
 - \(slope\) = local terrain slope from DEM/TMC
 - \(slope_{max}\) = maximum acceptable landing slope
 
-Flatter terrain gives a higher score.
+Flatter terrain receives a higher score.
 """)
 
 st.markdown("### 3. Illumination Score")
@@ -127,10 +106,10 @@ L =
 st.markdown("""
 Where:
 
-- \(T_{sunlit}\) = time the region receives useful illumination
-- \(T_{total}\) = total observation period
+- \(T_{sunlit}\) = useful illumination duration
+- \(T_{total}\) = total observation duration
 
-More illuminated regions are preferred for power and thermal control.
+Higher illumination improves power generation and thermal control.
 """)
 
 st.markdown("### 4. Boulder Safety Score")
@@ -144,7 +123,7 @@ B =
 st.markdown("""
 Where:
 
-- \(\rho_{boulder}\) = boulder density estimated from OHRC imagery
+- \(\rho_{boulder}\) = boulder density from OHRC imagery
 - \(\rho_{max}\) = maximum acceptable boulder density
 
 Low-boulder regions receive higher scores.
@@ -160,59 +139,84 @@ C =
 st.markdown("""
 Where:
 
-- \(T_{visible}\) = time with Earth/orbiter communication visibility
-- \(T_{total}\) = total mission-relevant time window
+- \(T_{visible}\) = time with Earth/orbiter visibility
+- \(T_{total}\) = total mission-relevant duration
 
-Sites with better communication access receive higher scores.
+Better communication access increases the score.
 """)
 
-st.markdown("## Final Candidate Selection")
+st.markdown("---")
+
+st.markdown("## Weight Selection Methodology")
 
 st.markdown("""
-After computing all five scores, every candidate landing pixel or zone receives a final score.
+The weights are assigned using a **mission-priority approach**, not randomly.
 
-The candidates are then sorted:
-
-1. Remove unsafe regions using hard constraints  
-2. Compute normalized scores  
-3. Apply weighted scoring equation  
-4. Rank candidate sites  
-5. Select top landing zones  
-6. Pass best sites to rover traverse planning  
+The scoring model prioritizes the main mission objective first, then safety and operational
+feasibility. The weights are normalized so the total contribution equals 1.
 """)
 
-st.markdown("## Scientific and Engineering Justification")
+st.latex(r"""
+\sum_{i=1}^{5} w_i = 1
+""")
+
+st.table({
+    "Factor": [
+        "Ice Accessibility",
+        "Terrain Safety",
+        "Solar Illumination",
+        "Boulder Hazard",
+        "Communication Visibility"
+    ],
+    "Weight": [
+        "0.30",
+        "0.25",
+        "0.20",
+        "0.15",
+        "0.10"
+    ],
+    "Why this priority was chosen": [
+        "Primary scientific objective of the mission",
+        "Critical for safe landing and rover deployment",
+        "Important for power and thermal survival",
+        "Important for landing safety and rover mobility",
+        "Important, but can sometimes be supported by relay assets"
+    ]
+})
 
 st.markdown("""
-The weights are chosen to reflect the balance between **scientific return** and **mission safety**.
+### Priority Logic
 
-### Ice Accessibility — 0.30
+The ranking follows this mission logic:
 
-Ice accessibility receives the highest weight because the main objective of the mission is
-to identify and access scientifically meaningful water-ice deposits. A landing site far from
-a high-confidence ice target would reduce the value of the mission, even if the site is safe.
+**Ice access > Landing safety > Illumination > Boulder risk > Communication**
 
-### Terrain Safety — 0.25
+Ice accessibility receives the highest weight because the purpose of the mission is to reach
+scientifically valuable ice-bearing regions.
 
-Slope safety receives the second-highest weight because landing stability is non-negotiable.
-A scientifically interesting site is not useful if the lander cannot safely touch down or if a
-rover cannot leave the landing zone.
+Terrain safety is nearly as important because a site with high scientific value is unusable
+if the lander cannot safely touch down.
 
-### Solar Illumination — 0.20
+Illumination is weighted next because polar missions depend on power availability and
+thermal control.
 
-Illumination is important for power generation and thermal management. Lunar south polar
-missions often prefer regions near PSRs that still receive useful sunlight, such as crater rims
-or nearby elevated terrain.
+Boulder hazard is included to reduce landing and rover mobility risk.
 
-### Boulder Hazard — 0.15
+Communication visibility receives the lowest weight because communication constraints
+may be partly mitigated through relay orbiters or mission design choices.
+""")
 
-Boulders and rough terrain increase the risk of landing damage and rover mobility problems.
-This factor penalizes rocky or blocky regions visible in OHRC imagery.
+st.markdown("""
+### Future Improvement
 
-### Communication Visibility — 0.10
+In later stages, these knowledge-driven weights can be replaced or refined using:
 
-Communication is important, but it is weighted slightly lower because relay support or
-mission design choices may partially compensate for limited direct visibility.
+- Analytic Hierarchy Process
+- Multi-Criteria Decision Analysis
+- Bayesian Decision Theory
+- Expert-derived ISRO mission priorities
+
+This makes the scoring model adaptable to different mission objectives.
 """)
 
 st.markdown("---")
@@ -235,14 +239,14 @@ color="#38bdf8",
 fontsize=12
 ];
 
-A [label="Ice Probability\\nfrom Bayesian Fusion"];
-B [label="Slope Safety\\nfrom DEM/TMC"];
-C [label="Illumination\\nnear PSR boundary"];
-D [label="Boulder Density\\nfrom OHRC"];
-E [label="Communication\\nvisibility"];
+A [label="Ice Probability\\nBayesian Fusion"];
+B [label="Slope Safety\\nDEM/TMC"];
+C [label="Illumination\\nSolar Access"];
+D [label="Boulder Density\\nOHRC"];
+E [label="Communication\\nVisibility"];
 
 F [
-label="Weighted Landing\\nSuitability Score",
+label="Weighted Suitability\\nScoring Engine",
 fillcolor="#312e81",
 color="#a78bfa"
 ];
@@ -274,25 +278,15 @@ G -> H;
 st.markdown("## Candidate Ranking Strategy")
 
 st.markdown("""
-Each potential landing zone is evaluated independently.
+The framework evaluates every candidate landing zone using the following sequence:
 
-For every candidate zone, the framework computes normalized scores for ice proximity,
-terrain slope, illumination, boulder hazard and communication visibility. These scores are
-then combined using the weighted equation.
-
-The best candidates are those that satisfy both science and safety requirements:
-
-- High ice probability nearby
-- Low slope terrain
-- Low boulder density
-- Useful illumination access
-- Acceptable communication geometry
-- Reasonable rover distance to ice target
-
-The top-ranked landing zones are passed to the rover traverse planning module.
+1. Remove unsafe regions using hard constraints  
+2. Normalize all scoring factors between 0 and 1  
+3. Compute the weighted suitability score  
+4. Rank all candidate sites  
+5. Select the highest-scoring landing zones  
+6. Pass the best site to the rover traverse planning module  
 """)
-
-st.markdown("---")
 
 st.markdown("## Engineering Constraints")
 

@@ -150,3 +150,14 @@ class DataIngestion(BaseModule):
         logger.info("Module 01 completed successfully.")
 
         return dataset
+    def validate_input(self):
+        logger.info("Module 01 input validation placeholder.")
+
+    def process(self):
+        logger.info("Module 01 processing placeholder.")
+
+    def validate_output(self):
+        logger.info("Module 01 output validation placeholder.")
+
+    def save_results(self):
+        logger.info("Module 01 results placeholder.")

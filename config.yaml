@@ -1,45 +1,71 @@
+# ==========================================================
+# Lunar Ice Detection System Configuration
+# ==========================================================
+
 project:
 
-  name: Lunar Ice Detection Framework
+  name: "Lunar Ice Detection System"
 
-  version: 1.0
+  version: "1.0"
 
+  mission: "Chandrayaan-2"
 
+  instrument: "DFSAR"
+
+# ==========================================================
 
 paths:
 
-  dfsar_xml: Data/raw/sample.xml
+  raw_data: "Data/raw"
 
-  dfsar_data: Data/raw/sample.dat
+  processed_data: "Data/processed"
 
-  output: results/
+  temporary_data: "Data/temporary"
 
-  figures: figures/
+  output_data: "Data/outputs"
 
+  reports: "results/reports"
 
+  figures: "figures"
+
+  logs: "logs"
+
+# ==========================================================
+
+datasets:
+
+  dfsar_xml: ""
+
+  dfsar_data: ""
+
+  ohrc: ""
+
+  diviner: ""
+
+  mini_rf: ""
+
+# ==========================================================
 
 processing:
 
-  band: L
+  use_gpu: false
 
-  calibration: true
+  save_intermediate: true
 
-  speckle_filter: refined_lee
+  verbose: true
 
-  decomposition: all
+# ==========================================================
 
+visualization:
 
+  dpi: 300
 
-thresholds:
+  figure_format: "png"
 
-  cpr: 1.0
+# ==========================================================
 
-  dop: 0.13
+logging:
 
-  probability: 0.50
+  level: "INFO"
 
-
-
-monte_carlo:
-
-  simulations: 10000
+  save_log: true
